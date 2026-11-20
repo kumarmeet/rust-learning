@@ -1,0 +1,1 @@
+The openai 1.1.1 documentation is somewhat dated. Its builder documentation lists older supported models, so gpt-4o compatibility is not guaranteed by that documentation. Check the crate's API compatibility before relying on it.
