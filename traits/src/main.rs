@@ -4,7 +4,12 @@ So we are kind of using the compiler to give us a standard of consistency, to st
 these functionalities so that they are alike.
 */
 trait Accommodation {
-    fn get_description(&self) -> String;
+    // The way this is going to work is that Rust will utilize the method definition from the trait declaration,
+    // but only if we do not declare that method when implementing the trait for a given type.
+    // So you can think of the methods that we declare here as fallbacks.
+    fn get_description(&self) -> String {
+        "a wonderful place to stay".to_string() // default implementation
+    }
     fn book(&mut self, name: &str, nights: u32);
 }
 
@@ -21,12 +26,23 @@ impl Hotel {
             reservations: HashMap::new(),
         }
     }
+
+    fn summarize(&self) -> String {
+        format!(
+            "{} - {:?} - {}",
+            self.name,
+            self.reservations,
+            self.get_description() //calling trait method from another method
+        )
+    }
 }
 
 impl Accommodation for Hotel {
-    fn get_description(&self) -> String {
-        format!("{} - {:?}", self.name, self.reservations)
-    }
+    // we can remove this function, as on Accommodation trait we define the get_description method as fallback
+
+    // fn get_description(&self) -> String {
+    //     format!("{} - {:?}", self.name, self.reservations)
+    // }
 
     fn book(&mut self, name: &str, nights: u32) {
         self.reservations.insert(name.to_string(), nights);
@@ -58,16 +74,24 @@ impl Accommodation for AirBnb {
     }
 }
 
+// 'entity' can be any type as long as it implements the Accommodation trait.
+// Rust will not care about the exact type or types passed in, but it will validate that those types implement the Accommodation trait.
+
+fn book_for_one_night(entity: &mut impl Accommodation, name: &str) {
+    entity.book(name, 1);
+}
+
 fn main() {
     let mut handloom = Hotel::new("the handloom");
 
     handloom.book("john", 10);
-    handloom.book("wick", 15);
 
-    let details = handloom.get_description();
+    book_for_one_night(&mut handloom, "wick");
+
+    let details = handloom.summarize();
     println!("{}", details);
 
-    let mut air_bnb = AirBnb::new("john");
-    air_bnb.book("wick", 10);
+    let mut air_bnb = AirBnb::new("air bnd");
+    book_for_one_night(&mut air_bnb, "loise");
     println!("{}", air_bnb.get_description());
 }
